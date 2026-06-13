@@ -7,20 +7,19 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.PreviewWrapper
 import androidx.compose.ui.unit.dp
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.KMZBDOS.NombreViewModel
 
 @Composable
 fun PantallaListaNombres(
     onBack: () -> Unit
 ) {
-
-    var nombre by rememberSaveable { mutableStateOf("") }
-    var listaNombres by rememberSaveable { mutableStateOf(listOf<String>()) }
+    val viewModel: NombreViewModel = viewModel()
+    val listaNombres by viewModel.nombres.collectAsState(initial = emptyList())
+    var nombre by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
@@ -28,7 +27,6 @@ fun PantallaListaNombres(
             .background(Color(0xFFCDB4DB))
             .padding(16.dp)
     ) {
-
         Button(onClick = onBack) {
             Text("Regresar")
         }
@@ -47,7 +45,7 @@ fun PantallaListaNombres(
         Button(
             onClick = {
                 if (nombre.isNotEmpty()) {
-                    listaNombres = listaNombres + nombre
+                    viewModel.agregar(nombre)
                     nombre = ""
                 }
             }
@@ -62,7 +60,7 @@ fun PantallaListaNombres(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("Listado de nombres")
-            Button(onClick = { listaNombres = listOf() }) {
+            Button(onClick = { viewModel.limpiar() }) {
                 Text("Limpiar")
             }
         }
@@ -76,14 +74,13 @@ fun PantallaListaNombres(
                 .border(3.dp, Color(0xFFB5838D))
                 .padding(8.dp)
         ) {
-
             LazyColumn {
-                itemsIndexed(listaNombres) { index, nombreGuardado ->
+                itemsIndexed(listaNombres) { index, item ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(nombreGuardado)
+                        Text(item.nombre)
                         Text("${index + 1}")
                     }
                 }
